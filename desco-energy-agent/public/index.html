@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DESCO Energy Agent | প্রিপেড মিটার ব্যালেন্স ও খরচ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Bangla:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ================= LOGIN SCREEN ================= -->
+  <div id="login-screen" class="screen active">
+    <div class="card login-card">
+      <div class="brand">
+        <div class="mark">⚡</div>
+        <div>DESCO Energy Agent</div>
+      </div>
+      <p class="subtitle">DESCO Prepaid কাস্টমার পোর্টাল থেকে রিয়াল-টাইম মিটার ব্যালেন্স, রিচার্জ ও খরচের তথ্য দেখুন</p>
+      <div class="alert" id="login-alert" style="display:none;"></div>
+      <form id="login-form">
+        <label class="field">
+          <span>কনজুমার নম্বর বা মোবাইল</span>
+          <input type="text" name="consumerNo" placeholder="যেমন: DESCO-2024-8841" required autocomplete="off">
+        </label>
+        <label class="field">
+          <span>পাসওয়ার্ড / ওটিপি</span>
+          <input type="password" name="password" placeholder="পাসওয়ার্ড লিখুন" required autocomplete="off">
+        </label>
+        <p class="demo-note">ডেমো মোড: যেকোনো আইডি ও পাসওয়ার্ড দিয়ে লগইন করা যাবে।</p>
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">লগইন করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div id="dashboard" class="screen" style="display:none;">
+    <header class="app-header">
+      <button class="btn btn-icon logout" id="logout-btn">লগআউট</button>
+      <div class="header-title">
+        <div class="mark">⚡</div>
+        <div class="title">DESCO Energy Agent</div>
+      </div>
+      <span class="pill" id="mode-pill">ডেমো মোড</span>
+    </header>
+
+    <div class="grid">
+      <!-- Balance card -->
+      <article class="card big">
+        <div class="kicker">মিটার ব্যালেন্স</div>
+        <div class="balance-display">৳<span id="balance">0.00</span></div>
+        <div class="meta">
+          <span id="units">0</span> ইউনিট বাকি &nbsp;|&nbsp;
+          <span id="unit-price">২.৩৫</span> টাকা/ইউনিট
+        </div>
+        <div class="chip">স্ট্যাটাস: <span id="meter-status" class="status-active">সক্রিয়</span></div>
+      </article>
+
+      <!-- Today consumption mini chart -->
+      <article class="card">
+        <div class="kicker">আজকের খরচ</div>
+        <div class="chart-wrap">
+          <canvas id="todayChart" height="120"></canvas>
+        </div>
+        <div class="today-stat" id="today-stat">০ ইউনিট</div>
+      </article>
+
+      <!-- 30-day chart -->
+      <article class="card wide">
+        <div class="kicker">শেষ ৩০ দিনের খরচ (ইউনিট)</div>
+        <div class="chart-wrap">
+          <canvas id="monthChart" height="200"></canvas>
+        </div>
+      </article>
+    </div>
+
+    <div class="grid">
+      <!-- AI insights -->
+      <article class="card wide ai-panel">
+        <div class="kicker">আই এজেন্টের পরামর্শ</div>
+        <div id="ai-insights">
+          <div class="placeholder">দয়া করে ডাটা লোড হতে দিন...</div>
+        </div>
+      </article>
+
+      <!-- Recharge -->
+      <article class="card">
+        <div class="kicker">রিচার্জ করুন</div>
+        <form id="recharge-form" class="recharge-form">
+          <label class="field">
+            <span>টাকা</span>
+            <input type="number" name="amount" placeholder="যেমন: ১০০" min="10" step="10" required>
+          </label>
+          <label class="field">
+            <span>পদ্ধতি</span>
+            <select name="method">
+              <option>বিকাশ</option>
+              <option>নগদ</option>
+              <option>রকেট</option>
+              <option>ক্রেডিট/ডেবিট কার্ড</option>
+            </select>
+          </label>
+          <button type="submit" class="btn btn-success btn-block" id="recharge-btn">রিচার্জ করুন</button>
+        </form>
+        <div id="recharge-result" style="margin-top:12px;"></div>
+      </article>
+
+      <!-- History -->
+      <article class="card wide">
+        <div class="kicker">সাম্প্রতিক রিচার্জ ইতিহাস</div>
+        <div class="table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr><th>তারিখ</th><th>টাকা</th><th>ইউনিট</th><th>স্ট্যাটাস</th><th>ট্রানজাকশন আইডি</th></tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+
+    <footer class="app-footer">
+      ডেমো ডেটা — সার্ভার সাইডে সরাসরি DESCO API যুক্ত করতে হলে <code>.env</code> ফাইলে <code>DEMO_MODE=false</code> করুন এবং পোর্টালের নেটওয়ার্ক ট্যাব থেকে প্রকৃত এন্ডপಾಯেন্ট URL যোগ করুন।
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
